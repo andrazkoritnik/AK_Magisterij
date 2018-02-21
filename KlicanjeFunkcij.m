@@ -12,6 +12,8 @@ end
 
 DSCvseLezije = zeros(1,126);
 
+%asèofjsdklgbjsdkln
+
 % for p = 1:length(nameListStruct)
 for p = 1:126
     RefName = FileNames{p}
