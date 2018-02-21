@@ -12,7 +12,7 @@ end
 
 DSCvseLezije = zeros(1,126);
 
-%asèofjsdklgbjsdkln
+%% Tale komentar sem dodal za test....
 
 % for p = 1:length(nameListStruct)
 for p = 1:126
