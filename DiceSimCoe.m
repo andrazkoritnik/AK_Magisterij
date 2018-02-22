@@ -1,46 +1,23 @@
 
-function DSCizracun = DiceSimCoe(matr1, matr2)
-
-pathName = 'C:\Users\Andraz\Desktop\Faks\Mag.naloga\lesion_snips\ShrambaSegmentacij\';
-% path = 'C:\Users\Andraz\Desktop\Faks\Mag.naloga\lesion_snips'
-% cd(path)
-
-
-
-% 
-% load([pathName, 'Segmoja1.mat']);
-% load([pathName, 'tabula1.mat']);
-% 
-% matr1 = Segmoja1;
-% matr2 = tabula1;
+function DSC = DiceSimCoe(mat1, mat2) 
+% This function calculates Dice similarity coefficient between mat1 and 
+% mat2. 
+% Use: DSC = DiceSimCoe(mat1, mat2) 
+ 
 
 
-
-    if size(matr1) ~= size(matr2)
-        error('Matriki morata biti enake velikosti!')
-    end
-
-%     
-% matr1=matr1>0;
-% matr2=matr2>0;   
+% Tabula = tabulaSegmentacije(snip.seg);
+%  mat1 = Tabula;
+%  mat2 = Tabula(:,:,:,2);
 
 
+if size(mat1) ~= size(mat2) 
+    error('Matriki morata biti enake velikosti!') 
+end 
 
-Tabula = matr1;
-Tabula(:,:,:,2) = matr2;
-    C = min(matr1,matr2);
-    D = max(matr1,matr2);
-    
-    
+C = min(mat1,mat2)
+D = max(mat1,mat2) 
 
-% C = matr1 .* matr2;
-% D = matr1 + matr2;
-
-% D(D>1) = 1;
-
-DSCji = sum(C(:)) / sum(D(:));
-
-DSCizracun = DSCji;
-
+DSC = sum(C(:)) / sum(D(:)); 
+ 
 end
-

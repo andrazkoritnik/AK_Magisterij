@@ -1,18 +1,13 @@
 
-path='C:\Users\Andraz\Desktop\Faks\Mag.naloga\lesion_snips\';
+path='C:\Users\Andraz\Desktop\Faks\Mag.naloga\AK_Magisterij\';
 cd(path)
 
 nameListStruct= dir('*.mat');
 for i=1:length(nameListStruct)
-%     for i = 1:5
     FileNames{i}=nameListStruct(i).name;
 end
- 
-% %%%%% change to desired snip number
 
-DSCvseLezije = zeros(1,126);
-
-%% Tale komentar sem dodal za test....
+% DSCvseLezije = zeros(1,126);    %% if thr1 & thr2 fixed
 
 % for p = 1:length(nameListStruct)
 for p = 1:126
@@ -23,76 +18,79 @@ for p = 1:126
     segIn = snip.seg;
     
     [a,b,c] = size(imIn);
-    
-    thr1 = 4;
     [Max_PET, Max_idx] = max(imIn(:));
-    thr2 = 0.42 * Max_PET;
-
-%      for o = 1:36
-%          thr1 = 1.4 + o*0.1;
-        
-         slikaSeg = andraz_segm_1(imIn,thr1,thr2);  
-         Tabula = tabulaSegmentacije(segIn);
+    
+%     thr1 = 3;                    %% if thr1 fixed
+%     thr2 = 0.42 * Max_PET;       %% if thr2 fixed
+    
+    for u = 1:4
+        for o = 1:36
          
-%            h = fspecial('average',2);
+            thr2 = (0.33 + u*0.01) .* Max_PET;
+            thr1 = 1.0 + o*0.1;
+
+            slikaSeg = andraz_segm_1(imIn,thr1,thr2);  
+            Tabula = tabulaSegmentacije(segIn);
+         
+%            h = fspecial('average',2);     %  filters
 %            h = fspecial('disk',0.4);
 %            B = imgaussfilt(slikaSeg, 0.4); 
 %            B = imfilter(slikaSeg,h);
+%            NHOOD2 = strel('disk',1);
+%            B = imopen(SlikaSeg,NHOOD2);
 
            
-
+            matr1 = Tabula;       
+            matr2 = slikaSeg;       
+%           matr2 = B;  % if filter
          
-         matr1 = Tabula;       
-         matr2 = slikaSeg;         
+            DSCi = DiceSimCoe(matr1,matr2);
+%           DSCvseLezije(p) = DSCi;   % if thr1 & thr2 fixed
+            DSCs(u,o) = DSCi;
+%           DSCs(o) = DSCi;           % if only thr1 is adapted
          
-%          DSCi = DiceSimCoe(matr1,matr2);
-         DSCi = DiceSimCoe(matr1,matr2);  %% èe thr1=1  (fiksen)
-        DSCvseLezije(p) = DSCi;
-%          DSCs(o) = DSCi;
-         
-%         end
+        end
+     end
     
-%          indeks = find(DSCs == max(DSCs));
-%          thr_pravi = 1.4 + indeks*0.1;
-%          DSCq(p) = max(DSCs);
+%         Y = find(DSCs == max(DSCs));   %% if only thr1 is adapted 
+
+         [Max_DSC, Max_idx] = max(DSCs(:));    %% if both thr1 & thr2 adapted
+         [X Y] = ind2sub(size(DSCs),Max_idx);
+         thr_pravi2 = (0.33 + X*0.01) * Max_PET
+         thr_pravi1 = 1.0 + Y*0.1
+         
+         DSCq(p) = max(DSCs(:));     %% if one of thri adapted
 %          
          
          %%  segmentacije slike z optimalnim thresholdom
          
-%          slikaSeg1 = andraz_segm_1(imIn,thr_pravi,thr2);
+%          slikaSeg1 = andraz_segm_1(imIn,thr1,thr2);  %% if no thr1 & thr2 adapted
+%          slikaSeg1 = andraz_segm_1(imIn,thr_pravi1,thr2);  %% if only thr1 is adapted
+         slikaSeg1 = andraz_segm_1(imIn,thr_pravi1,thr_pravi2);
 %            h1 = fspecial('average',2);
 %            h1 = fspecial('disk',0.6);
 %            B1 = imgaussfilt(slikaSeg1, 0.6); 
 %            B1 = imfilter(slikaSeg1,h1);
+%            NHOOD21 = strel('disk',1);
+%            B1 = imopen(SlikaSeg1,NHOOD21);
            
 %            figure(69)
-%            imshow3D(slikaSeg)
-%            
+%            imshow3D(slikaSeg1)
+%            imshow3D(B1)       % if filter
+
 %            figure(70)
 %            imshow3D(Tabula)
           
         
-    
-    
-    
-% % %           slikaSeg1 = andraz_segm_1(imIn,thr1,thr2);     %% -->   1)  Tole je funkcija moje segmentacije, katere output je slikeSeg
-%              slikaSegIM = andraz_segm_1IM(imIn,thr1,thr2)    %%  -->   2)  Funkcija moje segmentacije z dodanim "imopen"
-% % %           Tabula1 = tabulaSegmentacije(segIn)    %%  -->   3)   Funkcija, ki poslano segmentacijo spravi na 1  ( (snip.seg>1)=1  )
-          
-                    
-%           B = imgaussfilt(slikaSeg, 0.4) 
-%           h = fspecial('average',2)
-%           h = fspecial('disk',0.6)
-%           B = imfilter(slikaSeg,h)
-%           B = medfilt2(slikaSeg)
-          
-%     eval(['Segmoja' num2str(p) '=slikaSeg']);
+%%%%   saving stuff only
+
+%     eval(['Segmoja' num2str(p) '=slikaSeg1']);
 %     pathName4='C:\Users\Andraz\Desktop\Faks\Mag.naloga\lesion_snips\ShrambaSegmentacij\';     %%%... shrani 1)  v mapo ShrambaSegmentacij
 %     fileName4= ['Segmoja', num2str(p)];
 %     imeSpremenljivkevWorksspaceu4=(['Segmoja' num2str(p)]);
 %     save([pathName4 fileName4], imeSpremenljivkevWorksspaceu4);
 %     
-%     eval(['SegmojaIM' num2str(p) '=slikaSegIM']);
+%     eval(['SegmojaIM' num2str(p) '=B']);
 %     pathName4='C:\Users\Andraz\Desktop\Faks\Mag.naloga\lesion_snips\ShrambaSegmentacij\';     %%%... shrani 2)  v mapo ShrambaSegmentacij
 %     fileName4= ['SegmojaIM', num2str(p)];
 %     imeSpremenljivkevWorksspaceu4=(['SegmojaIM' num2str(p)]);
@@ -103,50 +101,19 @@ for p = 1:126
 %      fileName2= ['tabula', num2str(p)];
 %      imeSpremenljivkevWorksspaceu2=(['tabula' num2str(p)]);
 %      save([pathName2 fileName2], imeSpremenljivkevWorksspaceu2)
-%     
-%                
-% % %      matr3 = Tabula1;        %%  Definicija 1. matrike za DCS      
-% % %      matr4 = slikaSeg1;      %%  Definicija 2. matrike za DCS
-%      matr2 = slikaSegIM; 
-% 
-% % %                DSCz = DiceSimCoe(matr3,matr4);    %% Funkcija ki izraèuna DSC       
-                
-% % %                     DSCvseLezije(p) = DSCz;
-              
-% % %                     if DSCz > 0
-% % %                         NnoZeros = NnoZeros + 1;
-% % %                     end
-     
-     %%%%  Watershed 2D Function
-     
-%      petIMG = snip.pet;
-%      WS = watershed_2D(petIMG);
-%      
-%     eval(['SegWS' num2str(p) '=WS']);
-%     pathName8='C:\Users\Andraz\Desktop\Faks\Mag.naloga\lesion_snips\ShrambaSegmentacij\';     %%%... shrani 1)  v mapo ShrambaSegmentacij
-%     fileName8= ['SegWS', num2str(p)];
-%     imeSpremenljivkevWorksspaceu8=(['SegWS' num2str(p)]);
-%     save([pathName8 fileName8], imeSpremenljivkevWorksspaceu8)
-     
-    
+   
 end
-DSC_avg = mean(DSCvseLezije);
-% DSCvseLezije = sum(DSCi);   %% èe thr1 = 3 (fiksen)
 
-% DSC_avg = DSCvseLezije / p;
-
+DSC_avg = mean(DSCq);
+% DSCvseLezije = sum(DSCi);   %% if thr1 & thr2 fixed
+% DSC_avg = mean(DSCvseLezije);   %% if thr1 & thr2 fixed   
 
      x = 1:1:p
-     plot(x,DSCvseLezije); hold on
-     scatter(x,DSCvseLezije,'red'); hold off
+     figure(80)
+     plot(x,DSCq); hold on
+     scatter(x,DSCq,'red'); hold off
+%      plot(x,DSCvseLezije); hold on
+%      scatter(x,DSCvseLezije,'red'); hold off
      title('DiceSC; poslana vs. moja segmentacija; BKG=3 & THR=0.42*MaxSUV; diskFilter,0.6');
      ylabel('DiceSC');
      xlabel('Zaporedna st. lezije');
-
-% colorwash(slikaSeg, Tabula);
-% figure(1)
-% imshow3D(slikaSeg);
-% figure(2)
-% imshow3D(Tabula)
-% figure(3)
-% imshow3D(B)
