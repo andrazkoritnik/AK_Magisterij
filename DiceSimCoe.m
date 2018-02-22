@@ -15,8 +15,8 @@ if size(mat1) ~= size(mat2)
     error('Matriki morata biti enake velikosti!') 
 end 
 
-C = min(mat1,mat2)
-D = max(mat1,mat2) 
+C = min(mat1,mat2);
+D = max(mat1,mat2); 
 
 DSC = sum(C(:)) / sum(D(:)); 
  

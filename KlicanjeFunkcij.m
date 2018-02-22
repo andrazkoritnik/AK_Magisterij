@@ -7,10 +7,10 @@ for i=1:length(nameListStruct)
     FileNames{i}=nameListStruct(i).name;
 end
 
-% DSCvseLezije = zeros(1,126);    %% if thr1 & thr2 fixed
+% DSCvseLezije = zeros(1,126);        %% if thr1 & thr2 fixed
 
 % for p = 1:length(nameListStruct)
-for p = 1:126
+for p = 2:2
     RefName = FileNames{p}
     load(RefName)
     
@@ -18,68 +18,46 @@ for p = 1:126
     segIn = snip.seg;
     
     [a,b,c] = size(imIn);
-    [Max_PET, Max_idx] = max(imIn(:));
     
-%     thr1 = 3;                    %% if thr1 fixed
-%     thr2 = 0.42 * Max_PET;       %% if thr2 fixed
+         [Max_PET, Max_idx] = max(imIn(:));
     
-    for u = 1:4
-        for o = 1:36
-         
-            thr2 = (0.33 + u*0.01) .* Max_PET;
-            thr1 = 1.0 + o*0.1;
+%     thr1 = 3;                                         %% if thr1 & thr2 fixed
+%     thr2 = 0.42 * Max_PET;                            %% if thr1 & thr2 fixed
+%     slikaSeg = andraz_segm_1(imIn,thr1,thr2);         %% if thr1 & thr2 fixed
+%     Tabula = tabulaSegmentacije(segIn);               %% if thr1 & thr2 fixed
+%     matr1 = Tabula;                                   %% if thr1 & thr2 fixed
+%     matr2 = slikaSeg;                                 %% if thr1 & thr2 fixed
+%     matr2 = B;                                             % if filter           
+%     DSCvseLezije(p) = DSCi;                           %% if thr1 & thr2 fixed
 
-            slikaSeg = andraz_segm_1(imIn,thr1,thr2);  
-            Tabula = tabulaSegmentacije(segIn);
-         
-%            h = fspecial('average',2);     %  filters
-%            h = fspecial('disk',0.4);
-%            B = imgaussfilt(slikaSeg, 0.4); 
-%            B = imfilter(slikaSeg,h);
-%            NHOOD2 = strel('disk',1);
-%            B = imopen(SlikaSeg,NHOOD2);
-
-           
-            matr1 = Tabula;       
-            matr2 = slikaSeg;       
-%           matr2 = B;  % if filter
-         
-            DSCi = DiceSimCoe(matr1,matr2);
-%           DSCvseLezije(p) = DSCi;   % if thr1 & thr2 fixed
-            DSCs(u,o) = DSCi;
-%           DSCs(o) = DSCi;           % if only thr1 is adapted
-         
-        end
-     end
+    [DSCs, thr_pravi1, thr_pravi2] = optimal_thresholds(imIn,segIn,Max_PET);       %% function that find optimal thr1 & thr2 or one of them
     
-%         Y = find(DSCs == max(DSCs));   %% if only thr1 is adapted 
-
-         [Max_DSC, Max_idx] = max(DSCs(:));    %% if both thr1 & thr2 adapted
-         [X Y] = ind2sub(size(DSCs),Max_idx);
-         thr_pravi2 = (0.33 + X*0.01) * Max_PET
-         thr_pravi1 = 1.0 + Y*0.1
-         
-         DSCq(p) = max(DSCs(:));     %% if one of thri adapted
+     DSCq(p) = max(DSCs(:));     %% if one of thr_i or both adapted
 %          
          
          %%  segmentacije slike z optimalnim thresholdom
          
-%          slikaSeg1 = andraz_segm_1(imIn,thr1,thr2);  %% if no thr1 & thr2 adapted
 %          slikaSeg1 = andraz_segm_1(imIn,thr_pravi1,thr2);  %% if only thr1 is adapted
          slikaSeg1 = andraz_segm_1(imIn,thr_pravi1,thr_pravi2);
+         Tabula = tabulaSegmentacije(segIn);
+        
+         
 %            h1 = fspecial('average',2);
 %            h1 = fspecial('disk',0.6);
 %            B1 = imgaussfilt(slikaSeg1, 0.6); 
 %            B1 = imfilter(slikaSeg1,h1);
 %            NHOOD21 = strel('disk',1);
 %            B1 = imopen(SlikaSeg1,NHOOD21);
-           
-%            figure(69)
-%            imshow3D(slikaSeg1)
-%            imshow3D(B1)       % if filter
 
-%            figure(70)
-%            imshow3D(Tabula)
+           DSCC(p) = DiceSimCoe(slikaSeg1,Tabula);   % Check if DSCC same as DSCq
+%            DSCC(p) = DiceSimCoe(B1,Tabula);   % Check if DSCC same as DSCq
+           
+           figure(69)
+%            imshow3D(slikaSeg1)
+           imshow3D(B1)       % if filter
+
+           figure(70)
+           imshow3D(Tabula)
           
         
 %%%%   saving stuff only
@@ -104,16 +82,16 @@ for p = 1:126
    
 end
 
-DSC_avg = mean(DSCq);
-% DSCvseLezije = sum(DSCi);   %% if thr1 & thr2 fixed
-% DSC_avg = mean(DSCvseLezije);   %% if thr1 & thr2 fixed   
+DSC_avg = mean(DSCq);                   %% if one of thr_i or both adapted
+% DSC_avg = mean(DSCvseLezije);         %% if thr1 & thr2 fixed   
 
      x = 1:1:p
      figure(80)
      plot(x,DSCq); hold on
      scatter(x,DSCq,'red'); hold off
-%      plot(x,DSCvseLezije); hold on
-%      scatter(x,DSCvseLezije,'red'); hold off
+%      plot(x,DSCvseLezije); hold on              %% if thr1 & thr2 fixed
+%      scatter(x,DSCvseLezije,'red'); hold off    %% if thr1 & thr2 fixed
+
      title('DiceSC; poslana vs. moja segmentacija; BKG=3 & THR=0.42*MaxSUV; diskFilter,0.6');
      ylabel('DiceSC');
      xlabel('Zaporedna st. lezije');
